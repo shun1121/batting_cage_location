@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'firebase_options.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -59,10 +61,10 @@ class _MyWidgetState extends State<MyWidget> {
     Widget page;
     switch (selectedIndex) {
       case 0:
-        page = const GoogleMap('Home');
+        page = FavoritesPage();
         break;
       case 1:
-        page = const GoogleMap('GoogleMap');
+        page = const GoogleMapWidget();
         break;
       case 2:
         page = Message();
@@ -93,9 +95,43 @@ class _MyWidgetState extends State<MyWidget> {
   }
 }
 
-class GoogleMap extends StatelessWidget {
+class GoogleMapWidget extends StatefulWidget {
+  const GoogleMapWidget({super.key});
+
+  @override
+  State<GoogleMapWidget> createState() => _GoogleMapWidgetState();
+}
+
+class _GoogleMapWidgetState extends State<GoogleMapWidget> {
+  final Completer<GoogleMapController> _controller =
+      Completer<GoogleMapController>();
+
+  static const CameraPosition _kGooglePlex = CameraPosition(
+    target: LatLng(37.7749, -122.4194),
+    zoom: 15,
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Google Map'),
+      ),
+      body: GoogleMap(
+        mapType: MapType.normal,
+        initialCameraPosition: _kGooglePlex,
+        myLocationEnabled: true,
+        onMapCreated: (GoogleMapController controller) {
+          _controller.complete(controller);
+        },
+      ),
+    );
+  }
+}
+
+class GoogleMapTest extends StatelessWidget {
   final String pageName;
-  const GoogleMap(this.pageName, {Key? key}) : super(key: key);
+  const GoogleMapTest(this.pageName, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
