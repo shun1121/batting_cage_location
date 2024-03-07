@@ -5,12 +5,14 @@ import 'package:flutter/material.dart';
 import 'firebase_options.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:flutter_config/flutter_config.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  await FlutterConfig.loadEnvVariables();
 
   runApp(const MyApp());
 }
@@ -39,7 +41,6 @@ class FavoritesPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var favoriteList = List.generate(10, (index) => 'test $index');
-
     return Center(
       child: ListView(
         children: favoriteList.map((list) => Text(list.toString())).toList(),
@@ -106,15 +107,16 @@ class GoogleMapWidget extends StatefulWidget {
 }
 
 class _GoogleMapWidgetState extends State<GoogleMapWidget> {
-
-  final Completer<GoogleMapController> _controller =
-      Completer<GoogleMapController>();
   Position? currentPosition;
   late StreamSubscription<Position> positionStream;
 
-  static const CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.7749, -122.4194),
-    zoom: 15,
+  //初期位置
+  final CameraPosition _kGooglePlex = CameraPosition(
+    target: LatLng(
+      double.parse(FlutterConfig.get("CURRENT_LATITUDE")),
+      double.parse(FlutterConfig.get("CURRENT_LONGITUDE")),
+    ),
+    zoom: 14,
   );
 
   final LocationSettings locationSettings = const LocationSettings(
@@ -125,23 +127,29 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget> {
   @override
   void initState() {
     super.initState();
-
-    //位置情報が許可されていない時に許可をリクエストする
+    // 位置情報が許可されていない時に許可をリクエストする
     Future(() async {
       LocationPermission permission = await Geolocator.checkPermission();
-      if(permission == LocationPermission.denied){
+      if (permission == LocationPermission.denied) {
         await Geolocator.requestPermission();
+        // 位置情報の取得を開始する
+        startListeningToLocationUpdates();
+      } else {
+        // 位置情報の取得を開始する
+        startListeningToLocationUpdates();
       }
     });
+  }
 
-    //現在位置を更新し続ける
+  void startListeningToLocationUpdates() {
+    // 現在位置を更新し続ける
     positionStream =
-        Geolocator.getPositionStream(locationSettings: locationSettings)
-            .listen((Position? position) {
+      Geolocator.getPositionStream(locationSettings: locationSettings)
+          .listen((Position? position) {
       currentPosition = position;
       print(position == null
-          ? 'Unknown'
-          : '${position.latitude.toString()}, ${position.longitude.toString()}');
+        ? 'Unknown'
+        : '${position.latitude.toString()}, ${position.longitude.toString()}');
     });
   }
 
@@ -155,8 +163,9 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget> {
         mapType: MapType.normal,
         initialCameraPosition: _kGooglePlex,
         myLocationEnabled: true,
-        onMapCreated: (GoogleMapController controller) {
-          _controller.complete(controller);
+        onMapCreated: (GoogleMapController controller) {},
+        onTap: (LatLng latLang) {
+          print('Clicked: $latLang');
         },
       ),
     );
