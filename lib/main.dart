@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'firebase_options.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:geolocator/geolocator.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +34,8 @@ class MyWidget extends StatefulWidget {
 }
 
 class FavoritesPage extends StatelessWidget {
+  const FavoritesPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     var favoriteList = List.generate(10, (index) => 'test $index');
@@ -103,13 +106,44 @@ class GoogleMapWidget extends StatefulWidget {
 }
 
 class _GoogleMapWidgetState extends State<GoogleMapWidget> {
+
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
+  Position? currentPosition;
+  late StreamSubscription<Position> positionStream;
 
   static const CameraPosition _kGooglePlex = CameraPosition(
     target: LatLng(37.7749, -122.4194),
     zoom: 15,
   );
+
+  final LocationSettings locationSettings = const LocationSettings(
+    accuracy: LocationAccuracy.high,
+    distanceFilter: 100,
+  );
+
+  @override
+  void initState() {
+    super.initState();
+
+    //位置情報が許可されていない時に許可をリクエストする
+    Future(() async {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if(permission == LocationPermission.denied){
+        await Geolocator.requestPermission();
+      }
+    });
+
+    //現在位置を更新し続ける
+    positionStream =
+        Geolocator.getPositionStream(locationSettings: locationSettings)
+            .listen((Position? position) {
+      currentPosition = position;
+      print(position == null
+          ? 'Unknown'
+          : '${position.latitude.toString()}, ${position.longitude.toString()}');
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
