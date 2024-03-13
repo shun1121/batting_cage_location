@@ -6,6 +6,7 @@ import 'firebase_options.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_config/flutter_config.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,7 +24,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: MyWidget(),
+      home: AuthenticationWidget(),
     );
   }
 }
@@ -33,20 +34,6 @@ class MyWidget extends StatefulWidget {
 
   @override
   State<MyWidget> createState() => _MyWidgetState();
-}
-
-class FavoritesPage extends StatelessWidget {
-  const FavoritesPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    var favoriteList = List.generate(10, (index) => 'test $index');
-    return Center(
-      child: ListView(
-        children: favoriteList.map((list) => Text(list.toString())).toList(),
-      ),
-    );
-  }
 }
 
 class _MyWidgetState extends State<MyWidget> {
@@ -65,7 +52,7 @@ class _MyWidgetState extends State<MyWidget> {
     Widget page;
     switch (selectedIndex) {
       case 0:
-        page = FavoritesPage();
+        page = const FavoritesPage();
         break;
       case 1:
         page = const GoogleMapWidget();
@@ -76,24 +63,153 @@ class _MyWidgetState extends State<MyWidget> {
       default:
         throw UnimplementedError('no widget for $selectedIndex');
     }
+    return StreamBuilder(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (BuildContext context, AsyncSnapshot<User?> snapshot) {
+        if(snapshot.hasData) {
+          return Scaffold(
+            body: page,
+            bottomNavigationBar: BottomNavigationBar(
+              items: const [
+                BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+                BottomNavigationBarItem(icon: Icon(Icons.map), label: 'GoogleMap'),
+                BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Message'),
+              ],
+              currentIndex: selectedIndex,
+              onTap: (int index) {
+                setState(() {
+                  selectedIndex = index;
+                });
+              },
+              selectedItemColor: Colors.white,
+              unselectedItemColor: Colors.white54,
+              backgroundColor: Colors.blue,
+              type: BottomNavigationBarType.fixed,
+            ),
+          );
+        } else {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('ホーム'),
+            ),
+            body: const AuthenticationWidget()
+          );
+        }
+      });
+  }
+}
+
+class AuthenticationWidget extends StatefulWidget {
+  const AuthenticationWidget({super.key});
+
+  @override
+  State<AuthenticationWidget> createState() => _AuthenticationWidgetState();
+}
+
+class _AuthenticationWidgetState extends State<AuthenticationWidget> {
+  // 入力したメールアドレス・パスワード
+  String _email = '';
+  String _password = '';
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      body: page,
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'GoogleMap'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Message'),
-        ],
-        currentIndex: selectedIndex,
-        onTap: (int index) {
-          setState(() {
-            selectedIndex = index;
-          });
-        },
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white54,
-        backgroundColor: Colors.blue,
-        type: BottomNavigationBarType.fixed,
+      body: Center(
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              // 1行目 メールアドレス入力用テキストフィールド
+              TextFormField(
+                decoration: const InputDecoration(labelText: 'メールアドレス'),
+                onChanged: (String value) {
+                  setState(() {
+                    _email = value;
+                  });
+                },
+              ),
+              // 2行目 パスワード入力用テキストフィールド
+              TextFormField(
+                decoration: const InputDecoration(labelText: 'パスワード'),
+                obscureText: true,
+                onChanged: (String value) {
+                  setState(() {
+                    _password = value;
+                  });
+                },
+              ),
+              // 3行目 ユーザ登録ボタン
+              Padding(
+                padding: const EdgeInsets.only(top:32.0),
+                child: ElevatedButton(
+                  child: const Text('登録'),
+                  onPressed: () async {
+                    try {
+                      final User? user = (await FirebaseAuth.instance
+                              .createUserWithEmailAndPassword(
+                                  email: _email, password: _password))
+                          .user;
+                      if (user != null)
+                        print("ユーザ登録しました ${user.email} , ${user.uid}");
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (context) => MyWidget()),
+                        );
+                    } catch (e) {
+                      print(e);
+                    }
+                  },
+                ),
+              ),
+              // 4行目 ログインボタン
+              ElevatedButton(
+                child: const Text('ログイン'),
+                onPressed: () async {
+                  try {
+                    // メール/パスワードでログイン
+                    final User? user = (await FirebaseAuth.instance
+                            .signInWithEmailAndPassword(
+                                email: _email, password: _password))
+                        .user;
+                    if (user != null)
+                      print("ログインしました　${user.email} , ${user.uid}");
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (context) => MyWidget()),
+                      );
+                  } catch (e) {
+                    print(e);
+                  }
+                },
+              ),
+              // 5行目 パスワードリセット登録ボタン
+              ElevatedButton(
+                  child: const Text('パスワードリセット'),
+                  onPressed: () async {
+                    try {
+                      await FirebaseAuth.instance
+                          .sendPasswordResetEmail(email: _email);
+                      print("パスワードリセット用のメールを送信しました");
+                    } catch (e) {
+                      print(e);
+                    }
+                  }),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class FavoritesPage extends StatelessWidget {
+  const FavoritesPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    var favoriteList = List.generate(10, (index) => 'test $index');
+    return Center(
+      child: ListView(
+        children: favoriteList.map((list) => Text(list.toString())).toList(),
       ),
     );
   }
