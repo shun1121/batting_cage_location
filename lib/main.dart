@@ -173,6 +173,9 @@ class _AuthenticationWidgetState extends State<AuthenticationWidget> {
                         .user;
                     if (user != null)
                       print("ログインしました　${user.email} , ${user.uid}");
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (context) => MyWidget()),
+                      );
                   } catch (e) {
                     print(e);
                   }
