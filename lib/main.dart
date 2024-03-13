@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: MyWidget(),
+      home: AuthenticationWidget(),
     );
   }
 }
@@ -52,7 +52,7 @@ class _MyWidgetState extends State<MyWidget> {
     Widget page;
     switch (selectedIndex) {
       case 0:
-        page = const AuthenticationWidget();
+        page = const FavoritesPage();
         break;
       case 1:
         page = const GoogleMapWidget();
@@ -63,26 +63,39 @@ class _MyWidgetState extends State<MyWidget> {
       default:
         throw UnimplementedError('no widget for $selectedIndex');
     }
-    return Scaffold(
-      body: page,
-      bottomNavigationBar: BottomNavigationBar(
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.map), label: 'GoogleMap'),
-          BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Message'),
-        ],
-        currentIndex: selectedIndex,
-        onTap: (int index) {
-          setState(() {
-            selectedIndex = index;
-          });
-        },
-        selectedItemColor: Colors.white,
-        unselectedItemColor: Colors.white54,
-        backgroundColor: Colors.blue,
-        type: BottomNavigationBarType.fixed,
-      ),
-    );
+    return StreamBuilder(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (BuildContext context, AsyncSnapshot<User?> snapshot) {
+        if(snapshot.hasData) {
+          return Scaffold(
+            body: page,
+            bottomNavigationBar: BottomNavigationBar(
+              items: const [
+                BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+                BottomNavigationBarItem(icon: Icon(Icons.map), label: 'GoogleMap'),
+                BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Message'),
+              ],
+              currentIndex: selectedIndex,
+              onTap: (int index) {
+                setState(() {
+                  selectedIndex = index;
+                });
+              },
+              selectedItemColor: Colors.white,
+              unselectedItemColor: Colors.white54,
+              backgroundColor: Colors.blue,
+              type: BottomNavigationBarType.fixed,
+            ),
+          );
+        } else {
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('ホーム'),
+            ),
+            body: const AuthenticationWidget()
+          );
+        }
+      });
   }
 }
 
@@ -139,6 +152,9 @@ class _AuthenticationWidgetState extends State<AuthenticationWidget> {
                           .user;
                       if (user != null)
                         print("ユーザ登録しました ${user.email} , ${user.uid}");
+                        Navigator.of(context).pushReplacement(
+                          MaterialPageRoute(builder: (context) => MyWidget()),
+                        );
                     } catch (e) {
                       print(e);
                     }
