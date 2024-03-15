@@ -10,7 +10,7 @@ class AuthenticationWidget extends StatefulWidget {
 }
 
 class _AuthenticationWidgetState extends State<AuthenticationWidget> {
-  // 入力したメールアドレス・パスワード
+  
   String _email = '';
   String _password = '';
 
@@ -23,7 +23,6 @@ class _AuthenticationWidgetState extends State<AuthenticationWidget> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              // 1行目 メールアドレス入力用テキストフィールド
               TextFormField(
                 decoration: const InputDecoration(labelText: 'メールアドレス'),
                 onChanged: (String value) {
@@ -32,7 +31,6 @@ class _AuthenticationWidgetState extends State<AuthenticationWidget> {
                   });
                 },
               ),
-              // 2行目 パスワード入力用テキストフィールド
               TextFormField(
                 decoration: const InputDecoration(labelText: 'パスワード'),
                 obscureText: true,
@@ -42,7 +40,6 @@ class _AuthenticationWidgetState extends State<AuthenticationWidget> {
                   });
                 },
               ),
-              // 3行目 ユーザ登録ボタン
               Padding(
                 padding: const EdgeInsets.only(top:32.0),
                 child: ElevatedButton(
@@ -64,12 +61,10 @@ class _AuthenticationWidgetState extends State<AuthenticationWidget> {
                   },
                 ),
               ),
-              // 4行目 ログインボタン
               ElevatedButton(
                 child: const Text('ログイン'),
                 onPressed: () async {
                   try {
-                    // メール/パスワードでログイン
                     final User? user = (await FirebaseAuth.instance
                             .signInWithEmailAndPassword(
                                 email: _email, password: _password))
@@ -84,7 +79,6 @@ class _AuthenticationWidgetState extends State<AuthenticationWidget> {
                   }
                 },
               ),
-              // 5行目 パスワードリセット登録ボタン
               ElevatedButton(
                   child: const Text('パスワードリセット'),
                   onPressed: () async {
