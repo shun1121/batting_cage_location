@@ -1,6 +1,7 @@
 import 'package:batting_cage_location/screens/authentication_widget.dart';
 import 'package:batting_cage_location/widgets/favorite_widget.dart';
 import 'package:batting_cage_location/widgets/google_map_widget.dart';
+import 'package:batting_cage_location/widgets/google_place_widget.dart';
 import 'package:batting_cage_location/widgets/message_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -28,7 +29,7 @@ class _MyWidgetState extends State<MyWidget> {
     Widget page;
     switch (selectedIndex) {
       case 0:
-        page = const FavoritesPage();
+        page = const GooglePlaceWidget();
         break;
       case 1:
         page = const GoogleMapWidget();
