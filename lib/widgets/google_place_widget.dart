@@ -17,7 +17,7 @@ class GooglePlaceWidget extends StatefulWidget {
 
 class _GooglePlaceWidget extends State<GooglePlaceWidget> {
   late GooglePlace googlePlace;
-  List<AutocompletePrediction> predictions = [];
+  List<AutocompletePrediction> searchPredictions = [];
 
   @override
   void initState() {
@@ -30,14 +30,13 @@ class _GooglePlaceWidget extends State<GooglePlaceWidget> {
     var result = await googlePlace.autocomplete.get(value);
     if (result != null && result.predictions != null && mounted) {
       setState(() {
-        predictions = result.predictions!;
+        searchPredictions = result.predictions!;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    List<AutocompletePrediction> searchPredictions = [];
     return Scaffold(
       body: SafeArea(
         child: SizedBox(
@@ -81,7 +80,7 @@ class _GooglePlaceWidget extends State<GooglePlaceWidget> {
                               color: Colors.grey[500],
                               icon: const Icon(Icons.arrow_back_ios_new),
                               onPressed: () {
-                                Navigator.pop(context);
+                                // Navigator.pop(context);
                               },
                             ),
                             hintText: 'バッティングセンターを検索',
@@ -98,12 +97,11 @@ class _GooglePlaceWidget extends State<GooglePlaceWidget> {
               Flexible(
                 child: ListView.builder(
                   shrinkWrap: true,
-                  itemCount: predictions.length, // 検索結果の配列の長さを指定（配列名.length）,
+                  itemCount: searchPredictions.length, // 検索結果の配列の長さを指定,
                   itemBuilder: (context, index) {
-                    // print(predictions[index].description);
                     return Card(
                       child: ListTile(
-                        title: Text(predictions[index].description.toString()),
+                        title: Text(searchPredictions[index].description.toString()),
                         onTap: () async {},
                       ),
                     );
