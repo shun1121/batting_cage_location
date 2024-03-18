@@ -51,7 +51,7 @@ class _AuthenticationWidgetState extends State<AuthenticationWidget> {
                                   email: _email, password: _password))
                           .user;
                       if (user != null)
-                        print("ユーザ登録しました ${user.email} , ${user.uid}");
+                        print("ユーザ登録しました ${user.email}");
                         Navigator.of(context).pushReplacement(
                           MaterialPageRoute(builder: (context) => MyWidget()),
                         );
@@ -70,7 +70,7 @@ class _AuthenticationWidgetState extends State<AuthenticationWidget> {
                                 email: _email, password: _password))
                         .user;
                     if (user != null)
-                      print("ログインしました　${user.email} , ${user.uid}");
+                      print("ログインしました　${user.email}");
                       Navigator.of(context).pushReplacement(
                         MaterialPageRoute(builder: (context) => MyWidget()),
                       );

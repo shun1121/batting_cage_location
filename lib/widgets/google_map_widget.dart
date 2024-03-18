@@ -50,7 +50,7 @@ class _GoogleMapWidgetState extends State<GoogleMapWidget> {
     // 現在位置を更新し続ける
     positionStream =
       Geolocator.getPositionStream(locationSettings: locationSettings)
-          .listen((Position? position) {
+        .listen((Position? position) {
       currentPosition = position;
       print(position == null
         ? 'Unknown'
