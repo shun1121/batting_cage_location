@@ -55,11 +55,15 @@ class _MapWithSearchBarWidgetState extends State<MapWithSearchBarWidget> {
 
   void startListeningToLocationUpdates() {
     // 現在位置を更新し続ける
-    positionStream = Geolocator.getPositionStream(locationSettings: locationSettings).listen((Position? position) {
+    positionStream =
+        Geolocator.getPositionStream(locationSettings: locationSettings)
+            .listen((Position? position) {
       setState(() {
         currentPosition = position;
       });
-      print(position == null ? 'Unknown' : '${position.latitude.toString()}, ${position.longitude.toString()}');
+      print(position == null
+          ? 'Unknown'
+          : '${position.latitude.toString()}, ${position.longitude.toString()}');
     });
   }
 
@@ -78,90 +82,96 @@ class _MapWithSearchBarWidgetState extends State<MapWithSearchBarWidget> {
       appBar: AppBar(
         title: const Text('Map with Search Bar'),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            flex: 2,
-            child: GoogleMap(
-              mapType: MapType.normal,
-              initialCameraPosition: _kGooglePlex,
-              myLocationEnabled: true,
-              onMapCreated: (GoogleMapController controller) {
-                mapController = controller;
-              },
-              onTap: (LatLng latLang) {
-                print('Clicked: $latLang');
-              },
+      body: Stack(
+        // child: Column(
+          children: [
+            Expanded(
+              // flex: 2,
+              child: GoogleMap(
+                mapType: MapType.normal,
+                initialCameraPosition: _kGooglePlex,
+                myLocationEnabled: true,
+                onMapCreated: (GoogleMapController controller) {
+                  mapController = controller;
+                },
+                onTap: (LatLng latLang) {
+                  print('Clicked: $latLang');
+                },
+              ),
             ),
-          ),
-          Expanded(
-            flex: 3,
-            child: SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(30),
-                        boxShadow: const [
-                          BoxShadow(
+            Align(
+              alignment: Alignment.topCenter,
+              // flex: 3,
+              // child: SafeArea(
+              // child: Padding(
+              //   padding: const EdgeInsets.all(8.0),
+              child: Column(
+                children: [
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30),
+                      boxShadow: const [
+                        BoxShadow(
                             color: Colors.black12,
                             blurRadius: 10.0,
                             spreadRadius: 1.0,
                             offset: Offset(10, 10))
-                        ],
-                      ),
-                      child: TextFormField(
-                        onChanged: (value) {
-                          if (value.isNotEmpty) {
-                            autoCompleteSearch(value);
-                          } else {
-                            if (searchPredictions.length > 0 && mounted) {
-                              setState(() {
-                                searchPredictions = [];
-                              });
-                            }
+                      ],
+                    ),
+                    child: TextFormField(
+                      onChanged: (value) {
+                        if (value.isNotEmpty) {
+                          autoCompleteSearch(value);
+                        } else {
+                          if (searchPredictions.length > 0 && mounted) {
+                            setState(() {
+                              searchPredictions = [];
+                            });
                           }
-                        },
-                        decoration: InputDecoration(
-                          prefixIcon: IconButton(
-                            color: Colors.grey[500],
-                            icon: const Icon(Icons.arrow_back_ios_new),
-                            onPressed: () {
-                              // Navigator.pop(context);
+                        }
+                      },
+                      decoration: InputDecoration(
+                        prefixIcon: IconButton(
+                          color: Colors.grey[500],
+                          icon: const Icon(Icons.arrow_back_ios_new),
+                          onPressed: () {
+                            // Navigator.pop(context);
+                          },
+                        ),
+                        hintText: 'バッティングセンター',
+                        hintStyle: const TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.bold),
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: searchPredictions.length, // 検索結果の配列の長さを指定,
+                      itemBuilder: (context, index) {
+                        return Card(
+                          child: ListTile(
+                            title: Text(searchPredictions[index]
+                                .description
+                                .toString()),
+                            onTap: () async {
+                              // Handle onTap
                             },
                           ),
-                          hintText: 'バッティングセンター',
-                          hintStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
-                          border: InputBorder.none,
-                        ),
-                      ),
+                        );
+                      },
                     ),
-                    Expanded(
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        itemCount: searchPredictions.length, // 検索結果の配列の長さを指定,
-                        itemBuilder: (context, index) {
-                          return Card(
-                            child: ListTile(
-                              title: Text(searchPredictions[index].description.toString()),
-                              onTap: () async {
-                                // Handle onTap
-                              },
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
+                // ),
               ),
+              // ),
             ),
-          ),
-        ],
-      ),
+          ],
+        ),
+      // ),
     );
   }
 }
