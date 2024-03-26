@@ -68,15 +68,11 @@ class _MapWithSearchBarWidgetState extends State<MapWithSearchBarWidget> {
     });
   }
 
-  void autoCompleteSearch(String value) async {
-    var result = await googlePlace.autocomplete.get(value);
+  void autoCompleteSearch(String value, String category) async {
+    var result = await googlePlace.autocomplete.get(value, types: category, language: 'ja');
     if (result != null && result.predictions != null && mounted) {
-      print('iiiii');
-      // print(searchPredictions[1].description.toString());
       setState(() {
         searchPredictions = result.predictions!;
-        print('aaaaaaa');
-        // print(searchPredictions[1].placeId);
       });
     }
   }
@@ -129,7 +125,7 @@ class _MapWithSearchBarWidgetState extends State<MapWithSearchBarWidget> {
                       child: TextFormField(
                         onChanged: (value) {
                           if (value.isNotEmpty) {
-                            autoCompleteSearch(value);
+                            autoCompleteSearch(value, 'gym');
                           } else {
                             if (searchPredictions.length > 0 && mounted) {
                               setState(() {
