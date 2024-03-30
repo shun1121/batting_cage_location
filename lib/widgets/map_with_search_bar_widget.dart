@@ -19,7 +19,7 @@ class _MapWithSearchBarWidgetState extends State<MapWithSearchBarWidget> {
   List<AutocompletePrediction> searchPredictions = [];
   Position? currentPosition;
   late StreamSubscription<Position> positionStream;
-  late GoogleMapController mapController;
+  Completer _controller = Completer();
 
   final CameraPosition _kGooglePlex = CameraPosition(
     target: LatLng(
@@ -37,6 +37,8 @@ class _MapWithSearchBarWidgetState extends State<MapWithSearchBarWidget> {
   @override
   void initState() {
     super.initState();
+    String apiKey = FlutterConfig.get("PLACES_API_KEY");
+    googlePlace = GooglePlace(apiKey);
     // 位置情報が許可されていない時に許可をリクエストする
     Future(() async {
       LocationPermission permission = await Geolocator.checkPermission();
@@ -49,9 +51,6 @@ class _MapWithSearchBarWidgetState extends State<MapWithSearchBarWidget> {
         startListeningToLocationUpdates();
       }
     });
-
-    String apiKey = FlutterConfig.get("PLACES_API_KEY");
-    googlePlace = GooglePlace(apiKey);
   }
 
   void startListeningToLocationUpdates() {
@@ -69,7 +68,8 @@ class _MapWithSearchBarWidgetState extends State<MapWithSearchBarWidget> {
   }
 
   void autoCompleteSearch(String value, String category) async {
-    var result = await googlePlace.autocomplete.get(value, types: category, language: 'ja');
+    var result = await googlePlace.autocomplete
+        .get(value, types: category, language: 'ja');
     if (result != null && result.predictions != null && mounted) {
       setState(() {
         searchPredictions = result.predictions!;
@@ -77,10 +77,19 @@ class _MapWithSearchBarWidgetState extends State<MapWithSearchBarWidget> {
     }
   }
 
+  Future<void> _animateCamera(List<double> position) async {
+    final mapController = await _controller.future;
+    await mapController.animateCamera(
+      CameraUpdate.newLatLng(
+        LatLng(position[0], position[1]),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    var LatAndLng = [];
+    List<double> LatLng = [];
     return Scaffold(
       appBar: AppBar(
         title: const Text('Map with Search Bar'),
@@ -94,10 +103,7 @@ class _MapWithSearchBarWidgetState extends State<MapWithSearchBarWidget> {
               initialCameraPosition: _kGooglePlex,
               myLocationEnabled: true,
               onMapCreated: (GoogleMapController controller) {
-                mapController = controller;
-              },
-              onTap: (LatLng latLang) {
-                print('Clicked: $latLang');
+                _controller.complete(controller);
               },
             ),
           ),
@@ -127,7 +133,7 @@ class _MapWithSearchBarWidgetState extends State<MapWithSearchBarWidget> {
                           if (value.isNotEmpty) {
                             autoCompleteSearch(value, 'gym');
                           } else {
-                            if (searchPredictions.length > 0 && mounted) {
+                            if (searchPredictions.isNotEmpty && mounted) {
                               setState(() {
                                 searchPredictions = [];
                               });
@@ -164,19 +170,11 @@ class _MapWithSearchBarWidgetState extends State<MapWithSearchBarWidget> {
                                     searchPredictions[index]
                                         .description
                                         .toString());
-                                if (locations != null && locations.isNotEmpty) {
-                                  print(locations.first.latitude);
-                                  print(locations.first.longitude);
-                                  // ここで必要な処理を実行する
-                                  setState(() {
-                                    // 取得した経度と緯度を配列に格納
-                                    LatAndLng.add(locations.first.latitude);
-                                    LatAndLng.add(locations.first.longitude);
-                                  });
-                                  print(LatAndLng);
-                                } else {
-                                  print('No location found for the address');
-                                }
+                                setState(() {
+                                  LatLng.add(locations.first.latitude);
+                                  LatLng.add(locations.first.longitude);
+                                });
+                                _animateCamera(LatLng);
                               },
                             ),
                           );
