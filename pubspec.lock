@@ -200,6 +200,38 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  geocoding:
+    dependency: "direct main"
+    description:
+      name: geocoding
+      sha256: d580c801cba9386b4fac5047c4c785a4e19554f46be42f4f5e5b7deacd088a66
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0"
+  geocoding_android:
+    dependency: transitive
+    description:
+      name: geocoding_android
+      sha256: "4e1539a136c6ab4c44963cfc631970ee499f706a03654fc1d446b2100caf7221"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.3.0"
+  geocoding_ios:
+    dependency: transitive
+    description:
+      name: geocoding_ios
+      sha256: "94ddba60387501bd1c11e18dca7c5a9e8c645d6e3da9c38b9762434941870c24"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.1"
+  geocoding_platform_interface:
+    dependency: transitive
+    description:
+      name: geocoding_platform_interface
+      sha256: "8c2c8226e5c276594c2e18bfe88b19110ed770aeb7c1ab50ede570be8b92229b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.2.0"
   geolocator:
     dependency: "direct main"
     description:
@@ -296,6 +328,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.5.4+3"
+  google_place:
+    dependency: "direct main"
+    description:
+      name: google_place
+      sha256: "71538407e63f194a5a10d4747c934d26bfc4328c5ee571ffe25ae70a917f2cdc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.7"
   html:
     dependency: transitive
     description:
@@ -304,6 +344,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.15.4"
+  http:
+    dependency: transitive
+    description:
+      name: http
+      sha256: "5895291c13fa8a3bd82e76d5627f69e0d85ca6a30dcac95c4ea19a5d555879c2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.13.6"
   http_parser:
     dependency: transitive
     description:
